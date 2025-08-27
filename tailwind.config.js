@@ -15,7 +15,7 @@ const commonSizes = {
   '1/4': '25%',
   '3/4': '75%',
 };
-for (let i = 5; i <= 100; i += 5) {
+for (let i = 1; i <= 100; i++) {
   commonSizes[`${i}/100`] = `${i}%`;
   if (i % 10 === 0) {
     commonSizes[`${i / 10}/10`] = `${i}%`;
