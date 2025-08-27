@@ -35,14 +35,14 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="recordsession"
+          name="RecordingSession"
           options={{
             title: 'Prompts',
             tabBarLabel: 'Prompts',
           }}
         />
         <Tabs.Screen
-          name="profile"
+          name="Profile"
           options={{
             title: 'Profile',
             tabBarLabel: 'Profile',
