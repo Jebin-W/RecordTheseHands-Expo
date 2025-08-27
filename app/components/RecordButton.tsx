@@ -22,15 +22,14 @@ export default function RecordButton({
   return (
     <View
       style={{
-        position: 'absolute',
-        bottom: 10,
+        padding: 2,
         display: 'flex',
         aspectRatio: '1 / 1',
         height: '8%',
         maxHeight: 86,
         maxWidth: 86,
-        minHeight: 60,
-        minWidth: 60,
+        minHeight: 54,
+        minWidth: 54,
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: '50%',
@@ -48,8 +47,8 @@ export default function RecordButton({
             height: '80%',
             maxWidth: 60,
             maxHeight: 60,
-            minWidth: 44,
-            minHeight: 44,
+            minWidth: 40,
+            minHeight: 40,
             transform: [{ scale: scaleAnimation }],
             borderRadius: warpAnimation.interpolate({
               inputRange: [0, 1],

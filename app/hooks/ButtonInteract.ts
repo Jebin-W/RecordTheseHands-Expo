@@ -87,47 +87,47 @@ export function useRecordButton(recordingStates?: {
 
 export function usePauseButton(pauseState?: { onTogglePause: () => void }) {
   const [isPaused, setIsPaused] = useState<boolean>(false);
-  const warpAnimation = useRef(new Animated.Value(1)).current;
-  const scaleAnimation = useRef(new Animated.Value(1)).current;
-  const glowAnimation = useRef(new Animated.Value(1)).current;
+  // const warpAnimation = useRef(new Animated.Value(1)).current;
+  // const scaleAnimation = useRef(new Animated.Value(1)).current;
+  // const glowAnimation = useRef(new Animated.Value(1)).current;
 
-  const startPauseAnimation = useCallback(() => {
-    Animated.parallel([
-      Animated.timing(scaleAnimation, {
-        toValue: 0.8,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(warpAnimation, {
-        toValue: 0.4,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [scaleAnimation, warpAnimation]);
+  // const startPauseAnimation = useCallback(() => {
+  //   Animated.parallel([
+  //     Animated.timing(scaleAnimation, {
+  //       toValue: 0.8,
+  //       duration: 200,
+  //       useNativeDriver: true,
+  //     }),
+  //     Animated.timing(warpAnimation, {
+  //       toValue: 0.4,
+  //       duration: 200,
+  //       useNativeDriver: true,
+  //     }),
+  //   ]).start();
+  // }, [scaleAnimation, warpAnimation]);
 
-  const stopPauseAnimation = useCallback(() => {
-    Animated.parallel([
-      Animated.timing(scaleAnimation, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(warpAnimation, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [scaleAnimation, warpAnimation]);
+  // const stopPauseAnimation = useCallback(() => {
+  //   Animated.parallel([
+  //     Animated.timing(scaleAnimation, {
+  //       toValue: 1,
+  //       duration: 200,
+  //       useNativeDriver: true,
+  //     }),
+  //     Animated.timing(warpAnimation, {
+  //       toValue: 1,
+  //       duration: 200,
+  //       useNativeDriver: true,
+  //     }),
+  //   ]).start();
+  // }, [scaleAnimation, warpAnimation]);
 
-  useEffect(() => {
-    if (isPaused) {
-      startPauseAnimation();
-    } else {
-      stopPauseAnimation();
-    }
-  }, [isPaused, startPauseAnimation, stopPauseAnimation]);
+  // useEffect(() => {
+  //   if (isPaused) {
+  //     startPauseAnimation();
+  //   } else {
+  //     stopPauseAnimation();
+  //   }
+  // }, [isPaused, startPauseAnimation, stopPauseAnimation]);
 
   const handleTogglePause = () => {
     setIsPaused(!isPaused);
@@ -140,5 +140,5 @@ export function usePauseButton(pauseState?: { onTogglePause: () => void }) {
     }
   };
 
-  return { isPaused, warpAnimation, scaleAnimation, handleTogglePause };
+  return { isPaused, handleTogglePause };
 }

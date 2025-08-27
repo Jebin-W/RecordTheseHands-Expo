@@ -299,14 +299,19 @@ export default function RecordingSessionScreen() {
               />
             )}
 
-            <RecordButton
-              isPortrait={isPortrait}
-              onStartRecording={startRecording}
-              onStopRecording={stopRecording}
-            />
+            <View
+              className="absolute bottom-0 flex flex-row items-center justify-center gap-4 rounded-2xl p-2"
+              // style={{ backgroundColor: 'rgba(71, 85, 105, 0.4)' }}
+            >
+              <RecordButton
+                isPortrait={isPortrait}
+                onStartRecording={startRecording}
+                onStopRecording={stopRecording}
+              />
+              {showPauseButton && <PauseButton onTogglePause={togglePause} />}
+            </View>
           </View>
         </View>
-        {showPauseButton && <PauseButton onTogglePause={togglePause} />}
       </SafeAreaView>
     </LinearGradient>
   );
