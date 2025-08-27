@@ -1,34 +1,34 @@
 import { Animated, Pressable, View } from 'react-native';
-import useAutoHideTabBar from 'app/hooks/AutoHideTabBar';
-import useRecordButton from 'app/hooks/RecordButtonInteract';
+import { useRecordButton } from 'app/hooks/ButtonInteract';
 import { useState } from 'react';
 
 interface RecordButtonProps {
   isPortrait: boolean;
+  onStartRecording: () => void;
+  onStopRecording: () => void;
 }
 
-export default function RecordButton({ isPortrait }: RecordButtonProps) {
-  const { slideAnimation } = useAutoHideTabBar();
+export default function RecordButton({
+  isPortrait,
+  onStartRecording,
+  onStopRecording,
+}: RecordButtonProps) {
   const [size, setSize] = useState(0);
-  const {
-    warpAnimation,
-    scaleAnimation,
-    isRecording,
-    recordingButtonAnimationHandler,
-    startRecording,
-    stopRecording,
-  } = useRecordButton();
+  const { warpAnimation, scaleAnimation, handleToggleRecording } = useRecordButton({
+    onStartRecording,
+    onStopRecording,
+  });
 
   return (
     <View
       style={{
         position: 'absolute',
-        bottom: 32,
+        bottom: 10,
         display: 'flex',
         aspectRatio: '1 / 1',
         height: '8%',
-        maxHeight: 72,
-        maxWidth: 72,
+        maxHeight: 86,
+        maxWidth: 86,
         minHeight: 60,
         minWidth: 60,
         alignItems: 'center',
@@ -39,15 +39,15 @@ export default function RecordButton({ isPortrait }: RecordButtonProps) {
       }}>
       <Pressable
         onLayout={(event) => setSize(event.nativeEvent.layout.width)}
-        onPress={recordingButtonAnimationHandler}
+        onPress={handleToggleRecording}
         className="flex h-full w-full border-spacing-4 items-center justify-center">
         <Animated.View
           style={{
             backgroundColor: '#dc2626',
             width: '80%',
             height: '80%',
-            maxWidth: 56,
-            maxHeight: 56,
+            maxWidth: 60,
+            maxHeight: 60,
             minWidth: 44,
             minHeight: 44,
             transform: [{ scale: scaleAnimation }],
