@@ -39,7 +39,7 @@ export default function useAutoHideTabBar() {
         const { locationY } = event.nativeEvent;
         console.log('Touch detected at:', locationY, 'Screen height:', height);
 
-        if (locationY > height * 0.9) {
+        if (locationY > height * 0.85) {
           console.log('Touch from bottom detected - showing tab bar');
           resetInactivityTimer();
         }
