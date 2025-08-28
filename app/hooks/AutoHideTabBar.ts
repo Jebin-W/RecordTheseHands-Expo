@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Animated, PanResponder, useWindowDimensions } from 'react-native';
 
 export default function useAutoHideTabBar() {
@@ -7,7 +7,7 @@ export default function useAutoHideTabBar() {
   const inactivityTimer = useRef<NodeJS.Timeout | null>(null);
   const { height } = useWindowDimensions();
 
-  const resetInactivityTimer = () => {
+  const resetInactivityTimer = useCallback(() => {
     if (inactivityTimer.current) {
       clearTimeout(inactivityTimer.current);
     }
@@ -30,7 +30,7 @@ export default function useAutoHideTabBar() {
         console.log('Tab bar hidden after inactivity');
       });
     }, 2000);
-  };
+  }, [slideAnimation]);
 
   const tapGestureResponder = useRef(
     PanResponder.create({
@@ -39,13 +39,28 @@ export default function useAutoHideTabBar() {
         const { locationY } = event.nativeEvent;
         console.log('Touch detected at:', locationY, 'Screen height:', height);
 
-        if (locationY > height * 0.85) {
+        if (locationY > height * 0.7) {
           console.log('Touch from bottom detected - showing tab bar');
           resetInactivityTimer();
         }
       },
     })
-  ).current;
+  );
+
+  useEffect(() => {
+    tapGestureResponder.current = PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderGrant: (event) => {
+        const { locationY } = event.nativeEvent;
+        console.log('Touch detected at:', locationY, 'Screen height:', height);
+
+        if (locationY > height * 0.7) {
+          console.log('Touch from bottom detected - showing tab bar');
+          resetInactivityTimer();
+        }
+      },
+    });
+  }, [height, resetInactivityTimer]);
 
   // Initialize timer on mount and clean up on unmount
   useEffect(() => {
@@ -57,10 +72,10 @@ export default function useAutoHideTabBar() {
         clearTimeout(inactivityTimer.current);
       }
     };
-  }, []);
+  }, [resetInactivityTimer]);
 
   return {
-    tapGestureResponder,
+    tapGestureResponder: tapGestureResponder.current,
     slideAnimation,
     isTabBarVisible,
     resetInactivityTimer,
