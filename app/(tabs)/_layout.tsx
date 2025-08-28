@@ -41,13 +41,15 @@ export default function TabLayout() {
             tabBarLabel: 'Prompts',
           }}
         />
-        <Tabs.Screen
-          name="Profile"
+        {/* I have no idea why it auto registers the Profile tab but doesn't for the other ones. Uncommenting this tab
+        creates a duplicate for the profile so don't uncomment it. */}
+        {/* <Tabs.Screen
+          name="profile"
           options={{
             title: 'Profile',
             tabBarLabel: 'Profile',
           }}
-        />
+        /> */}
       </Tabs>
     </View>
   );
