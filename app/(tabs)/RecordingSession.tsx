@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CameraView, Camera } from 'expo-camera';
 import { useIsFocused } from '@react-navigation/native';
@@ -17,6 +17,7 @@ import PauseButton from 'app/components/PauseButton';
 import RecordingTimer from 'app/components/RecordingTimer';
 import ReferenceVideo from 'app/components/ReferenceVideo';
 import Animated, { LinearTransition } from 'react-native-reanimated';
+import PromptCard from 'app/components/Prompt';
 
 export default function RecordingSessionScreen() {
   const DARK_BLUE = '#020617';
@@ -195,7 +196,9 @@ export default function RecordingSessionScreen() {
     return null;
   }
 
-  let parentContainerStyle = `flex h-full w-full items-center justify-center ${flexDirection}`;
+  let parentContainerStyle = `flex-1 h-full w-full items-center justify-center ${flexDirection}`;
+
+  const promptText = 'Bed   बिस्तर   ベッド   침대';
 
   // CameraView is buggy with NativeWind. Use inline + sheet styling instead.
   return (
@@ -205,6 +208,27 @@ export default function RecordingSessionScreen() {
       start={{ x: 1, y: 1 }}
       end={{ x: 0, y: 0 }}>
       <SafeAreaView className="relative flex-1 items-center">
+        <ScrollView
+          horizontal
+          bounces
+          alwaysBounceHorizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            flexGrow: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingHorizontal: 2,
+          }}
+          className="mx-4 my-2 flex w-97/100 rounded-xl bg-slate-900 p-2"
+          style={{
+            flexShrink: 0,
+            minHeight: 28,
+            maxHeight: 32,
+            outlineWidth: 1,
+            outlineColor: 'black',
+          }}>
+          <PromptCard prompt={promptText} />
+        </ScrollView>
         <View className={parentContainerStyle}>
           {videoStyle && (
             <Animated.View className="m-2 " style={videoStyle} layout={LinearTransition}>
