@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Animated } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { useSharedValue, useAnimatedStyle, withTiming, interpolate } from 'react-native-reanimated';
 
 export function useRecordButton(recordingStates?: {
   onStartRecording?: () => void;
   onStopRecording?: () => void;
 }) {
   const [isRecording, setIsRecording] = useState<boolean>(false);
-  const warpAnimation = useRef(new Animated.Value(1)).current;
-  const scaleAnimation = useRef(new Animated.Value(1)).current;
+  const [buttonSize, setButtonSize] = useState<number>(0);
+  const buttonAnimationProgress = useSharedValue(0);
 
   useEffect(() => {
     return () => {
@@ -16,34 +16,23 @@ export function useRecordButton(recordingStates?: {
   }, []);
 
   const startRecordingAnimation = useCallback(() => {
-    Animated.parallel([
-      Animated.timing(scaleAnimation, {
-        toValue: 0.8,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(warpAnimation, {
-        toValue: 0.4,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [scaleAnimation, warpAnimation]);
+    buttonAnimationProgress.value = withTiming(1, { duration: 100 });
+  }, [buttonAnimationProgress]);
 
   const stopRecordingAnimation = useCallback(() => {
-    Animated.parallel([
-      Animated.timing(scaleAnimation, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(warpAnimation, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [scaleAnimation, warpAnimation]);
+    buttonAnimationProgress.value = withTiming(0, { duration: 100 });
+  }, [buttonAnimationProgress]);
+
+  const buttonAnimationStyle = useAnimatedStyle(() => {
+    const scale = interpolate(buttonAnimationProgress.value, [0, 1], [1, 0.8]);
+    const warp = interpolate(buttonAnimationProgress.value, [0, 1], [1, 0.4]);
+    const borderRadius = warp * (buttonSize / 2);
+
+    return {
+      transform: [{ scale }],
+      borderRadius: borderRadius,
+    };
+  }, [buttonSize]);
 
   useEffect(() => {
     if (isRecording) {
@@ -78,56 +67,16 @@ export function useRecordButton(recordingStates?: {
   };
 
   return {
-    warpAnimation,
-    scaleAnimation,
-    isRecording: isRecording,
+    buttonAnimationProgress,
+    buttonAnimationStyle,
+    isRecording,
     handleToggleRecording,
+    setButtonSize,
   };
 }
 
 export function usePauseButton(pauseState?: { onTogglePause: () => void }) {
   const [isPaused, setIsPaused] = useState<boolean>(false);
-  // const warpAnimation = useRef(new Animated.Value(1)).current;
-  // const scaleAnimation = useRef(new Animated.Value(1)).current;
-  // const glowAnimation = useRef(new Animated.Value(1)).current;
-
-  // const startPauseAnimation = useCallback(() => {
-  //   Animated.parallel([
-  //     Animated.timing(scaleAnimation, {
-  //       toValue: 0.8,
-  //       duration: 200,
-  //       useNativeDriver: true,
-  //     }),
-  //     Animated.timing(warpAnimation, {
-  //       toValue: 0.4,
-  //       duration: 200,
-  //       useNativeDriver: true,
-  //     }),
-  //   ]).start();
-  // }, [scaleAnimation, warpAnimation]);
-
-  // const stopPauseAnimation = useCallback(() => {
-  //   Animated.parallel([
-  //     Animated.timing(scaleAnimation, {
-  //       toValue: 1,
-  //       duration: 200,
-  //       useNativeDriver: true,
-  //     }),
-  //     Animated.timing(warpAnimation, {
-  //       toValue: 1,
-  //       duration: 200,
-  //       useNativeDriver: true,
-  //     }),
-  //   ]).start();
-  // }, [scaleAnimation, warpAnimation]);
-
-  // useEffect(() => {
-  //   if (isPaused) {
-  //     startPauseAnimation();
-  //   } else {
-  //     stopPauseAnimation();
-  //   }
-  // }, [isPaused, startPauseAnimation, stopPauseAnimation]);
 
   const handleTogglePause = () => {
     setIsPaused(!isPaused);

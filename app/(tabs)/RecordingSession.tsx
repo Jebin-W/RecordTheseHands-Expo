@@ -1,11 +1,12 @@
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CameraView, Camera } from 'expo-camera';
 import { useIsFocused } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import RecordButton from 'app/components/RecordButton';
-import { DEVICE_TYPE, useIsPortrait } from '../hooks/DeviceProperties';
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useIsPortrait } from '../hooks/DeviceProperties';
+import { useLayoutManager } from '../hooks/LayoutManager';
+import { useEffect, useRef, useState } from 'react';
 import * as MediaLibrary from 'expo-media-library';
 import {
   ensureFileExists,
@@ -15,7 +16,7 @@ import {
 import PauseButton from 'app/components/PauseButton';
 import RecordingTimer from 'app/components/RecordingTimer';
 import ReferenceVideo from 'app/components/ReferenceVideo';
-import Svg, { Path } from 'react-native-svg';
+import Animated, { LinearTransition } from 'react-native-reanimated';
 
 export default function RecordingSessionScreen() {
   const DARK_BLUE = '#020617';
@@ -27,7 +28,9 @@ export default function RecordingSessionScreen() {
   const MAX_VIDEO_DURATION_SECONDS = 15 * 60;
 
   const isPortrait = useIsPortrait();
-  const aspectRatio = isPortrait ? 9 / 16 : 16 / 9;
+
+  const { layoutState, switchToFullscreen, switchToSplitscreen, switchToDefault } =
+    useLayoutManager();
 
   const [cameraPermission, setCameraPermission] = useState<boolean>(false);
   const [microphonePermission, setMicrophonePermission] = useState<boolean>(false);
@@ -121,6 +124,7 @@ export default function RecordingSessionScreen() {
     setResetTimer(false);
     const videoOutput = await cameraRef.current.recordAsync({
       maxDuration: MAX_VIDEO_DURATION_SECONDS,
+      codec: 'jpeg',
     });
     const sourceUri = (videoOutput as any)?.uri as string | undefined;
     if (!sourceUri) {
@@ -185,90 +189,13 @@ export default function RecordingSessionScreen() {
     setTimerColor('bg-red-800');
   };
 
-  const cameraContainerStyle = StyleSheet.create({
-    phonePortrait: {
-      aspectRatio: aspectRatio,
-      height: '100%',
-      borderRadius: 16,
-    },
-    phoneLandscape: {
-      aspectRatio: aspectRatio,
-      width: '100%',
-      bottom: 0,
-      borderRadius: 16,
-    },
-    tabletPortrait: {
-      aspectRatio: aspectRatio,
-      height: '100%',
-      bottom: 0,
-      borderRadius: 32,
-    },
-    tabletLandscape: {
-      aspectRatio: aspectRatio,
-      width: '80%',
-      borderRadius: 32,
-      bottom: 0,
-    },
-  });
-
-  const videoAspectRatio = 16 / 9;
-
-  const videoContainerStyle = StyleSheet.create({
-    phonePortrait: {
-      aspectRatio: videoAspectRatio,
-      width: '50%',
-      borderRadius: 16,
-    },
-    phoneLandscape: {
-      aspectRatio: videoAspectRatio,
-      width: '30%',
-      borderRadius: 16,
-    },
-    tabletPortrait: {
-      aspectRatio: videoAspectRatio,
-      width: '90%',
-      borderRadius: 32,
-    },
-    tabletLandscape: {
-      aspectRatio: videoAspectRatio,
-      width: '20%',
-      borderRadius: 32,
-    },
-    video: {
-      borderRadius: 16,
-      ...StyleSheet.absoluteFillObject,
-    },
-  });
-
-  let cameraStyle = null;
-  let videoStyle = null;
-  let flexDirection = '';
-  if (DEVICE_TYPE === 'Phone' && isPortrait) {
-    cameraStyle = cameraContainerStyle.phonePortrait;
-    videoStyle = videoContainerStyle.phonePortrait;
-    flexDirection = 'flex-col';
-  } else if (DEVICE_TYPE === 'Phone' && !isPortrait) {
-    cameraStyle = cameraContainerStyle.phoneLandscape;
-    videoStyle = videoContainerStyle.phoneLandscape;
-    flexDirection = 'flex-row-reverse';
-  } else if (DEVICE_TYPE === 'Tablet' && isPortrait) {
-    cameraStyle = cameraContainerStyle.tabletPortrait;
-    videoStyle = videoContainerStyle.tabletPortrait;
-    flexDirection = 'flex-col';
-  } else if (DEVICE_TYPE === 'Tablet' && !isPortrait) {
-    cameraStyle = cameraContainerStyle.tabletLandscape;
-    videoStyle = videoContainerStyle.tabletLandscape;
-    flexDirection = 'flex-col';
-  } else {
-    console.log('Your device does not have a default supported style.');
-    return;
-  }
+  const { cameraStyle, videoStyle, flexDirection } = layoutState;
 
   if (!cameraStyle) {
     return null;
   }
 
-  let parentContainerStyle = `flex h-full w-full items-center ${flexDirection}`;
+  let parentContainerStyle = `flex h-full w-full items-center justify-center ${flexDirection}`;
 
   // CameraView is buggy with NativeWind. Use inline + sheet styling instead.
   return (
@@ -279,38 +206,53 @@ export default function RecordingSessionScreen() {
       end={{ x: 0, y: 0 }}>
       <SafeAreaView className="relative flex-1 items-center">
         <View className={parentContainerStyle}>
-          <View className="z-10 m-2" style={videoStyle}>
-            <ReferenceVideo />
-          </View>
-
-          <View className="m-2 w-full flex-1 flex-col items-center">
-            {isRecording && (
-              <RecordingTimer background={timerColor} paused={isPaused} reset={resetTimer} />
-            )}
-            {isFocused && (
-              <CameraView
-                ref={cameraRef}
-                ratio={DESIRED_ASPECT_RATIO}
-                videoBitrate={DESIRED_BITRATE}
-                videoQuality="2160p"
-                style={cameraStyle}
-                facing="front"
-                mode="video"
+          {videoStyle && (
+            <Animated.View className="m-2 " style={videoStyle} layout={LinearTransition}>
+              <ReferenceVideo
+                onFullScreen={switchToFullscreen}
+                onDefaultScreen={switchToDefault}
+                onSplitScreen={switchToSplitscreen}
+                currentMode={layoutState.mode}
               />
-            )}
+            </Animated.View>
+          )}
 
-            <View
-              className="absolute bottom-0 flex flex-row items-center justify-center gap-4 rounded-2xl p-2"
-              // style={{ backgroundColor: 'rgba(71, 85, 105, 0.4)' }}
-            >
-              <RecordButton
-                isPortrait={isPortrait}
-                onStartRecording={startRecording}
-                onStopRecording={stopRecording}
-              />
-              {showPauseButton && <PauseButton onTogglePause={togglePause} />}
-            </View>
-          </View>
+          {layoutState.mode !== 'fullscreen' && (
+            <Animated.View
+              className="m-2 w-full flex-1 flex-col items-center"
+              layout={LinearTransition}>
+              {isRecording && (
+                <RecordingTimer background={timerColor} paused={isPaused} reset={resetTimer} />
+              )}
+
+              {isFocused && (
+                <CameraView
+                  ref={cameraRef}
+                  ratio={DESIRED_ASPECT_RATIO}
+                  videoBitrate={DESIRED_BITRATE}
+                  videoQuality="2160p"
+                  style={cameraStyle}
+                  mute={true}
+                  videoStabilizationMode="auto"
+                  facing="front"
+                  mode="video"
+                />
+              )}
+
+              <Animated.View
+                className="absolute bottom-0 flex flex-row items-center justify-center gap-4 rounded-2xl p-2"
+                // style={{ backgroundColor: 'rgba(71, 85, 105, 0.4)' }}
+                layout={LinearTransition}>
+                <RecordButton
+                  isPortrait={isPortrait}
+                  onStartRecording={startRecording}
+                  onStopRecording={stopRecording}
+                />
+
+                {showPauseButton && <PauseButton onTogglePause={togglePause} />}
+              </Animated.View>
+            </Animated.View>
+          )}
         </View>
       </SafeAreaView>
     </LinearGradient>

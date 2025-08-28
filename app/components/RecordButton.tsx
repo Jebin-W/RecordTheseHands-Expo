@@ -1,6 +1,6 @@
-import { Animated, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import Animated, { LinearTransition } from 'react-native-reanimated';
 import { useRecordButton } from 'app/hooks/ButtonInteract';
-import { useState } from 'react';
 
 interface RecordButtonProps {
   isPortrait: boolean;
@@ -13,8 +13,7 @@ export default function RecordButton({
   onStartRecording,
   onStopRecording,
 }: RecordButtonProps) {
-  const [size, setSize] = useState(0);
-  const { warpAnimation, scaleAnimation, handleToggleRecording } = useRecordButton({
+  const { buttonAnimationStyle, handleToggleRecording, setButtonSize } = useRecordButton({
     onStartRecording,
     onStopRecording,
   });
@@ -37,24 +36,23 @@ export default function RecordButton({
         borderColor: '#ffffff',
       }}>
       <Pressable
-        onLayout={(event) => setSize(event.nativeEvent.layout.width)}
+        onLayout={(event) => setButtonSize(event.nativeEvent.layout.width)}
         onPress={handleToggleRecording}
         className="flex h-full w-full border-spacing-4 items-center justify-center">
         <Animated.View
-          style={{
-            backgroundColor: '#dc2626',
-            width: '80%',
-            height: '80%',
-            maxWidth: 60,
-            maxHeight: 60,
-            minWidth: 40,
-            minHeight: 40,
-            transform: [{ scale: scaleAnimation }],
-            borderRadius: warpAnimation.interpolate({
-              inputRange: [0, 1],
-              outputRange: [0, size / 2],
-            }),
-          }}></Animated.View>
+          style={[
+            {
+              backgroundColor: '#dc2626',
+              width: '80%',
+              height: '80%',
+              maxWidth: 60,
+              maxHeight: 60,
+              minWidth: 40,
+              minHeight: 40,
+            },
+            buttonAnimationStyle,
+          ]}
+          layout={LinearTransition}></Animated.View>
       </Pressable>
     </View>
   );
