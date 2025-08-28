@@ -73,7 +73,7 @@ function calculateDefaultScreenStyles(dimensions: WindowDimensions): LayoutStyle
     },
     tabletPortrait: {
       aspectRatio: videoAspectRatio,
-      width: '90%',
+      width: '50%',
       overflow: 'hidden',
       borderRadius: 32,
     },
@@ -133,7 +133,7 @@ function calculateFullScreenStyles(dimensions: WindowDimensions): LayoutStyles {
     },
     tabletPortrait: {
       aspectRatio: aspectRatio,
-      height: '100%',
+      height: '0%',
       borderRadius: 32,
     },
     tabletLandscape: {
@@ -164,7 +164,7 @@ function calculateFullScreenStyles(dimensions: WindowDimensions): LayoutStyles {
     },
     tabletLandscape: {
       aspectRatio: videoAspectRatio,
-      width: '100%',
+      width: '90%',
       overflow: 'hidden',
       borderRadius: 32,
     },
@@ -351,13 +351,35 @@ export function useLayoutManager() {
   }, [windowDimensions, getFullscreenLayoutStyles]);
 
   const switchToSplitscreen = useCallback(() => {
-    const newStyles = getSplitscreenLayoutStyles(windowDimensions);
+    let newStyles = getSplitscreenLayoutStyles(windowDimensions);
+    let mode = 'splitscreen' as LayoutMode;
+    if (layoutState.mode === 'splitscreen') {
+      switch (layoutState.previousMode) {
+        case 'fullscreen':
+          newStyles = getFullscreenLayoutStyles(windowDimensions);
+          mode = 'fullscreen' as LayoutMode;
+          break;
+        case 'default':
+          newStyles = getDefaultLayoutStyles(windowDimensions);
+          mode = 'default' as LayoutMode;
+          break;
+        default:
+          break;
+      }
+    }
     setLayoutState((prev) => ({
       ...newStyles,
-      mode: 'splitscreen',
+      mode: mode,
       previousMode: prev.mode,
     }));
-  }, [windowDimensions, getSplitscreenLayoutStyles]);
+  }, [
+    windowDimensions,
+    getSplitscreenLayoutStyles,
+    getDefaultLayoutStyles,
+    getFullscreenLayoutStyles,
+    layoutState.mode,
+    layoutState.previousMode,
+  ]);
 
   const restorePreviousLayout = useCallback(() => {
     switch (layoutState.previousMode) {
